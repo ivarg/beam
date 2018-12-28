@@ -115,12 +115,12 @@ public class TranslationContext {
     }
   }
 
-    public void putDatasetRaw(PValue value, Dataset<WindowedValue> dataset) {
-      if (!datasets.containsKey(value)) {
-        datasets.put(value, dataset);
-        leaves.add(dataset);
-      }
+  public void putDatasetRaw(PValue value, Dataset<WindowedValue> dataset) {
+    if (!datasets.containsKey(value)) {
+      datasets.put(value, dataset);
+      leaves.add(dataset);
     }
+  }
 
   // --------------------------------------------------------------------------------------------
   //  PCollections methods

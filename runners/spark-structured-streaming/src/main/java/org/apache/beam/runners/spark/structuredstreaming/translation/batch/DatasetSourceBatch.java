@@ -50,12 +50,13 @@ public class DatasetSourceBatch<T> implements DataSourceV2, ReadSupport {
   private TranslationContext context;
   private BoundedSource<T> source;
 
-
-  @Override public DataSourceReader createReader(DataSourceOptions options) {
+  @Override
+  public DataSourceReader createReader(DataSourceOptions options) {
     this.numPartitions = context.getSparkSession().sparkContext().defaultParallelism();
     checkArgument(this.numPartitions > 0, "Number of partitions must be greater than zero.");
     this.bundleSize = context.getOptions().getBundleSize();
-    return new DatasetReader();  }
+    return new DatasetReader();
+  }
 
   /** This class can be mapped to Beam {@link BoundedSource}. */
   private class DatasetReader implements DataSourceReader {
@@ -106,7 +107,7 @@ public class DatasetSourceBatch<T> implements DataSourceV2, ReadSupport {
     }
   }
 
-  /** This class can be mapped to Beam {@link BoundedReader} */
+  /** This class can be mapped to Beam {@link BoundedReader}. */
   private class DatasetPartitionReader implements InputPartitionReader<InternalRow> {
 
     BoundedReader<T> reader;

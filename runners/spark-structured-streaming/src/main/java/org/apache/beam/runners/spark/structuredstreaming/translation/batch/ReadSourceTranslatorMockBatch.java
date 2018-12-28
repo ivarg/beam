@@ -31,12 +31,14 @@ import org.apache.spark.sql.SparkSession;
 
 /**
  * Mock translator that generates a source of 0 to 999 and prints it.
+ *
  * @param <T>
  */
 class ReadSourceTranslatorMockBatch<T>
     implements TransformTranslator<PTransform<PBegin, PCollection<T>>> {
 
-  private String SOURCE_PROVIDER_CLASS = DatasetSourceMockBatch.class.getCanonicalName();
+  private static final String SOURCE_PROVIDER_CLASS =
+      DatasetSourceMockBatch.class.getCanonicalName();
 
   @SuppressWarnings("unchecked")
   @Override
@@ -46,12 +48,14 @@ class ReadSourceTranslatorMockBatch<T>
 
     Dataset<Row> rowDataset = sparkSession.read().format(SOURCE_PROVIDER_CLASS).load();
 
-    MapFunction<Row, WindowedValue> func = new MapFunction<Row, WindowedValue>() {
-      @Override public WindowedValue call(Row value) throws Exception {
-        //there is only one value put in each Row by the InputPartitionReader
-        return value.<WindowedValue>getAs(0);
-      }
-    };
+    MapFunction<Row, WindowedValue> func =
+        new MapFunction<Row, WindowedValue>() {
+          @Override
+          public WindowedValue call(Row value) throws Exception {
+            //there is only one value put in each Row by the InputPartitionReader
+            return value.<WindowedValue>getAs(0);
+          }
+        };
     //TODO: is there a better way than using the raw WindowedValue? Can an Encoder<WindowedVAlue<T>>
     // be created ?
     Dataset<WindowedValue> dataset = rowDataset.map(func, Encoders.kryo(WindowedValue.class));

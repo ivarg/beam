@@ -21,8 +21,6 @@ import java.io.IOException;
 import org.apache.beam.runners.core.construction.ReadTranslation;
 import org.apache.beam.runners.spark.structuredstreaming.translation.TransformTranslator;
 import org.apache.beam.runners.spark.structuredstreaming.translation.TranslationContext;
-import org.apache.beam.runners.spark.structuredstreaming.translation.batch.DatasetSourceBatch;
-import org.apache.beam.sdk.io.BoundedSource;
 import org.apache.beam.sdk.io.UnboundedSource;
 import org.apache.beam.sdk.runners.AppliedPTransform;
 import org.apache.beam.sdk.transforms.PTransform;
@@ -38,7 +36,8 @@ import org.apache.spark.sql.SparkSession;
 class ReadSourceTranslatorStreaming<T>
     implements TransformTranslator<PTransform<PBegin, PCollection<T>>> {
 
-  private String SOURCE_PROVIDER_CLASS = DatasetSourceStreaming.class.getCanonicalName();
+  private static final String SOURCE_PROVIDER_CLASS =
+      DatasetSourceStreaming.class.getCanonicalName();
 
   @SuppressWarnings("unchecked")
   @Override
@@ -50,8 +49,7 @@ class ReadSourceTranslatorStreaming<T>
 
     UnboundedSource<T, UnboundedSource.CheckpointMark> source;
     try {
-       source = ReadTranslation
-          .unboundedSourceFromTransform(rootTransform);
+      source = ReadTranslation.unboundedSourceFromTransform(rootTransform);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -60,12 +58,14 @@ class ReadSourceTranslatorStreaming<T>
     Dataset<Row> rowDataset = sparkSession.readStream().format(SOURCE_PROVIDER_CLASS).load();
 
     //TODO pass the source and the translation context serialized as string to the DatasetSource
-    MapFunction<Row, WindowedValue> func = new MapFunction<Row, WindowedValue>() {
-      @Override public WindowedValue call(Row value) throws Exception {
-        //there is only one value put in each Row by the InputPartitionReader
-        return value.<WindowedValue>getAs(0);
-      }
-    };
+    MapFunction<Row, WindowedValue> func =
+        new MapFunction<Row, WindowedValue>() {
+          @Override
+          public WindowedValue call(Row value) throws Exception {
+            //there is only one value put in each Row by the InputPartitionReader
+            return value.<WindowedValue>getAs(0);
+          }
+        };
     //TODO: is there a better way than using the raw WindowedValue? Can an Encoder<WindowedVAlue<T>>
     // be created ?
     Dataset<WindowedValue> dataset = rowDataset.map(func, Encoders.kryo(WindowedValue.class));

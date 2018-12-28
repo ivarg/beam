@@ -45,7 +45,7 @@ class FlattenTranslatorBatch<T>
       for (PValue pValue : inputs.values()) {
         checkArgument(
             pValue instanceof PCollection,
-            "Got non-PCollection input to flatten: %s of type %s",
+            "Got non-PCollection input to  flatten: %s of type %s",
             pValue,
             pValue.getClass().getSimpleName());
         @SuppressWarnings("unchecked")

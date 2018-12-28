@@ -28,16 +28,7 @@ import org.apache.beam.runners.spark.structuredstreaming.SparkPipelineOptions;
 import org.apache.beam.runners.spark.structuredstreaming.translation.TranslationContext;
 import org.apache.beam.sdk.io.BoundedSource;
 import org.apache.beam.sdk.io.BoundedSource.BoundedReader;
-import org.apache.beam.sdk.io.Source;
 import org.apache.beam.sdk.util.WindowedValue;
-import org.apache.spark.sql.AnalysisException;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.catalog.Catalog;
-import org.apache.spark.sql.catalog.Column;
-import org.apache.spark.sql.catalog.Database;
-import org.apache.spark.sql.catalog.Function;
-import org.apache.spark.sql.catalog.Table;
 import org.apache.spark.sql.catalyst.InternalRow;
 import org.apache.spark.sql.sources.v2.ContinuousReadSupport;
 import org.apache.spark.sql.sources.v2.DataSourceOptions;
@@ -48,20 +39,17 @@ import org.apache.spark.sql.sources.v2.reader.InputPartitionReader;
 import org.apache.spark.sql.sources.v2.reader.streaming.MicroBatchReader;
 import org.apache.spark.sql.sources.v2.reader.streaming.Offset;
 import org.apache.spark.sql.types.StructType;
-import org.apache.spark.storage.StorageLevel;
-import scala.collection.immutable.Map;
 
 /**
  * This is a spark structured streaming {@link DataSourceV2} implementation. As Continuous streaming
  * is tagged experimental in spark, this class does no implement {@link ContinuousReadSupport}.
  */
-public class DatasetSourceStreaming<T> implements DataSourceV2, MicroBatchReadSupport{
+public class DatasetSourceStreaming<T> implements DataSourceV2, MicroBatchReadSupport {
 
   private int numPartitions;
   private Long bundleSize;
   private TranslationContext context;
   private BoundedSource<T> source;
-
 
   @Override
   public MicroBatchReader createMicroBatchReader(
@@ -157,7 +145,7 @@ public class DatasetSourceStreaming<T> implements DataSourceV2, MicroBatchReadSu
     }
   }
 
-  /** This class can be mapped to Beam {@link BoundedReader} */
+  /** This class can be mapped to Beam {@link BoundedReader}. */
   private class DatasetMicroBatchPartitionReader implements InputPartitionReader<InternalRow> {
 
     BoundedReader<T> reader;

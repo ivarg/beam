@@ -36,7 +36,7 @@ import org.apache.spark.sql.SparkSession;
 class ReadSourceTranslatorBatch<T>
     implements TransformTranslator<PTransform<PBegin, PCollection<T>>> {
 
-  private String SOURCE_PROVIDER_CLASS = DatasetSourceBatch.class.getCanonicalName();
+  private static final String SOURCE_PROVIDER_CLASS = DatasetSourceBatch.class.getCanonicalName();
 
   @SuppressWarnings("unchecked")
   @Override
@@ -46,7 +46,7 @@ class ReadSourceTranslatorBatch<T>
         (AppliedPTransform<PBegin, PCollection<T>, PTransform<PBegin, PCollection<T>>>)
             context.getCurrentTransform();
 
-        BoundedSource<T> source;
+    BoundedSource<T> source;
     try {
       source = ReadTranslation.boundedSourceFromTransform(rootTransform);
     } catch (IOException e) {
@@ -57,12 +57,14 @@ class ReadSourceTranslatorBatch<T>
     Dataset<Row> rowDataset = sparkSession.read().format(SOURCE_PROVIDER_CLASS).load();
 
     //TODO pass the source and the translation context serialized as string to the DatasetSource
-    MapFunction<Row, WindowedValue> func = new MapFunction<Row, WindowedValue>() {
-      @Override public WindowedValue call(Row value) throws Exception {
-        //there is only one value put in each Row by the InputPartitionReader
-        return value.<WindowedValue>getAs(0);
-      }
-    };
+    MapFunction<Row, WindowedValue> func =
+        new MapFunction<Row, WindowedValue>() {
+          @Override
+          public WindowedValue call(Row value) throws Exception {
+            //there is only one value put in each Row by the InputPartitionReader
+            return value.<WindowedValue>getAs(0);
+          }
+        };
     //TODO: is there a better way than using the raw WindowedValue? Can an Encoder<WindowedVAlue<T>>
     // be created ?
     Dataset<WindowedValue> dataset = rowDataset.map(func, Encoders.kryo(WindowedValue.class));

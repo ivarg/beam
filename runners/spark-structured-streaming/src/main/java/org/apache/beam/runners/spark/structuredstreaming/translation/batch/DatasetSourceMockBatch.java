@@ -34,57 +34,63 @@ import org.apache.spark.sql.sources.v2.reader.InputPartitionReader;
 import org.apache.spark.sql.types.StructType;
 import org.joda.time.Instant;
 
-/**
- * This is a mock source that gives values between 0 and 999.
- */
+/** This is a mock source that gives values between 0 and 999. */
 public class DatasetSourceMockBatch implements DataSourceV2, ReadSupport {
 
-  @Override public DataSourceReader createReader(DataSourceOptions options) {
+  @Override
+  public DataSourceReader createReader(DataSourceOptions options) {
     return new DatasetReader();
   }
 
   /** This class can be mapped to Beam {@link BoundedSource}. */
   private static class DatasetReader implements DataSourceReader {
 
-    @Override public StructType readSchema() {
+    @Override
+    public StructType readSchema() {
       return new StructType();
     }
 
-    @Override public List<InputPartition<InternalRow>> planInputPartitions() {
+    @Override
+    public List<InputPartition<InternalRow>> planInputPartitions() {
       List<InputPartition<InternalRow>> result = new ArrayList<>();
-      result.add(new InputPartition<InternalRow>() {
+      result.add(
+          new InputPartition<InternalRow>() {
 
-        @Override public InputPartitionReader<InternalRow> createPartitionReader() {
-          return new DatasetPartitionReaderMock();
-        }
-      });
+            @Override
+            public InputPartitionReader<InternalRow> createPartitionReader() {
+              return new DatasetPartitionReaderMock();
+            }
+          });
       return result;
     }
   }
 
-  /** This class is a mocked reader*/
+  /** This class is a mocked reader. */
   private static class DatasetPartitionReaderMock implements InputPartitionReader<InternalRow> {
 
     private ArrayList<Integer> values;
     private int currentIndex = 0;
 
     private DatasetPartitionReaderMock() {
-      for (int i = 0; i < 1000; i++){
+      for (int i = 0; i < 1000; i++) {
         values.add(i);
       }
     }
 
-    @Override public boolean next() throws IOException {
+    @Override
+    public boolean next() throws IOException {
       currentIndex++;
       return (currentIndex <= values.size());
     }
 
-    @Override public void close() throws IOException {
-    }
+    @Override
+    public void close() throws IOException {}
 
-    @Override public InternalRow get() {
+    @Override
+    public InternalRow get() {
       List<Object> list = new ArrayList<>();
-      list.add(WindowedValue.timestampedValueInGlobalWindow(values.get(currentIndex), new Instant()));
+      list.add(
+          WindowedValue.timestampedValueInGlobalWindow(values.get(currentIndex), new Instant()));
       return InternalRow.apply(asScalaBuffer(list).toList());
     }
   }
