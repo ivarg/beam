@@ -74,6 +74,7 @@ func BuildWorkerBinary(ctx context.Context, filename string) error {
 	log.Infof(ctx, "Cross-compiling %v as %v", program, filename)
 
 	// Cross-compile given go program. Not awesome.
+	// TODO(ivarg): Compile the whole main package
 	build := []string{"go", "build", "-o", filename, program}
 
 	cmd := exec.Command(build[0], build[1:]...)

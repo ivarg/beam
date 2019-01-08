@@ -94,6 +94,7 @@ func main() {
 		log.Fatal("No artifacts staged")
 	case 1:
 		name = artifacts[0].Name
+		log.Printf("Found worker artifact [1]: %v", name)
 	default:
 		found := false
 		for _, a := range artifacts {
@@ -105,6 +106,7 @@ func main() {
 		if !found {
 			log.Fatalf("No artifact named '%v' found", worker)
 		}
+		log.Printf("Found worker artifact [default]: %v", name)
 	}
 
 	// (3) The persist dir may be on a noexec volume, so we must
